@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODOアプリ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        li.completed {
+            text-decoration: line-through;
+        }
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TODOリスト</h1>
+    <form id="todoForm">
+        <input type="text" id="todoInput" placeholder="新しいタスクを追加" required>
+        <button type="submit">追加</button>
+    </form>
+    <ul id="todoList">
+        <!-- タスクが追加される場所 -->
+    </ul>
+    <div>
+        <button onclick="filterTodos('all')">すべて</button>
+        <button onclick="filterTodos('active')">未完了</button>
+        <button onclick="filterTodos('completed')">完了</button>
+    </div>
+
+    <script>
+        const todoList = document.getElementById('todoList');
+        const todoForm = document.getElementById('todoForm');
+        const todoInput = document.getElementById('todoInput');
+
+        function addTodo(task) {
+            const li = document.createElement('li');
+            li.textContent = task;
+            li.addEventListener('click', () => {
+                li.classList.toggle('completed');
+                saveTodos();
+            });
+            li.appendChild(createDeleteButton(li));
+            todoList.appendChild(li);
+            saveTodos();
+        }
+
+        function createDeleteButton(li) {
+            const button = document.createElement('button');
+            button.textContent = '削除';
+            button.addEventListener('click', () => {
+                todoList.removeChild(li);
+                saveTodos();
+            });
+            return button;
+        }
+
+        function saveTodos() {
+            const todos = Array.from(todoList.children).map(li => li.textContent);
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function loadTodos() {
+            const todos = JSON.parse(localStorage.getItem('todos')) || [];
+            todos.forEach(todo => addTodo(todo));
+        }
+
+        function filterTodos(filter) {
+            const allTodos = todoList.children;
+            for (let i = 0; i < allTodos.length; i++) {
+                const todo = allTodos[i];
+                if (filter === 'active' && todo.classList.contains('completed')) {
+                    todo.style.display = 'none';
+                } else if (filter === 'completed' && !todo.classList.contains('completed')) {
+                    todo.style.display = 'none';
+                } else {
+                    todo.style.display = '';
+                }
+            }
+        }
+
+        todoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const task = todoInput.value.trim();
+            if (task) {
+                addTodo(task);
+                todoInput.value = '';
+            }
+        });
+
+        loadTodos();
+    </script>
+</body>
+</html>
